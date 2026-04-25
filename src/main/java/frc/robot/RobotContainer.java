@@ -4,20 +4,18 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import frc.robot.commands.*;
 import frc.robot.config.*;
 import frc.robot.subsystems.*;
 
 public class RobotContainer {
   private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-  private final CommandXboxController controller = new CommandXboxController(1);
+  private final CIMotorSubsystem cimMotor = new CIMotorSubsystem();
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  private final CommandJoystick driverController = new CommandJoystick(0);
+
   public RobotContainer() {
-    // Configure the trigger bindings
     configureBindings();
   }
 
@@ -25,19 +23,25 @@ public class RobotContainer {
     /* Default Commands */
     // Drive
     drivetrain.setDefaultCommand(
-      new DrivetrainCommand(
-        drivetrain,
-        DrivetrainCommand.Position.TELEOP,
-        controller::getLeftX,
-        controller::getLeftY,
-        controller::getRightX));
+        new DrivetrainCommand(
+            drivetrain,
+            DrivetrainCommand.Position.TELEOP,
+            driverController::getX,
+            driverController::getY,
+            driverController::getTwist));
 
-    /* Controls */
-    // Thers nothing here yet
+    // CIM Motor - move back and forth at 10% speed when button 1 is held
+    cimMotor.setDefaultCommand(new MoveCIMotorCommand(cimMotor));
 
-}
+    // Button 1 triggers CIM motor command
+    driverController.button(1).whileTrue(new MoveCIMotorCommand(cimMotor));
+  }
 
-public CommandSwerveDrivetrain getDrivetrain() {
-  return drivetrain;
-}
+  public CommandSwerveDrivetrain getDrivetrain() {
+    return drivetrain;
+  }
+
+  public CIMotorSubsystem getCIMotor() {
+    return cimMotor;
+  }
 }
