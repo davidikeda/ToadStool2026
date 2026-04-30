@@ -4,39 +4,32 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
- * CIM Motor subsystem using TalonFX on CAN ID 1. Controls a CIM motor at 10% speed moving back and
+ * CIM Motor subsystem using TalonSRX on CAN ID 30. Controls a CIM motor at 10% speed moving back and
  * forth.
  */
 public class CIMotorSubsystem extends SubsystemBase {
-  private final TalonFX motor = new TalonFX(1);
-  private final DutyCycleOut control = new DutyCycleOut(0);
+  private final WPI_TalonSRX motor = new WPI_TalonSRX(30);
 
   private boolean movingForward = true;
   private static final double SPEED = 0.10; // 10% speed
 
   public CIMotorSubsystem() {
-    // Configure motor settings
-    var config = new TalonFXConfiguration();
-    motor.getConfigurator().apply(config);
+    motor.configFactoryDefault();
   }
 
   /** Move the motor at 10% speed in the current direction. */
   public void move() {
     double output = movingForward ? SPEED : -SPEED;
-    control.withOutput(output);
-    motor.setControl(control);
+    motor.set(output);
   }
 
   /** Stop the motor. */
   public void stop() {
-    control.withOutput(0);
-    motor.setControl(control);
+    motor.set(0);
   }
 
   /** Toggle the direction of movement. */
