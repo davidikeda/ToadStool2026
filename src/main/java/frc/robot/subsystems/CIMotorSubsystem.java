@@ -8,8 +8,8 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
- * CIM Motor subsystem using TalonSRX on CAN ID 30. Controls a CIM motor at 10% speed moving back and
- * forth.
+ * CIM Motor subsystem using TalonSRX on CAN ID 30. Controls a CIM motor at 10% speed moving back
+ * and forth.
  */
 public class CIMotorSubsystem extends SubsystemBase {
   private final WPI_TalonSRX motor = new WPI_TalonSRX(30);
