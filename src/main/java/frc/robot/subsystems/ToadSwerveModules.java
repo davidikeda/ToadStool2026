@@ -3,17 +3,26 @@ package frc.robot.subsystems;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+@Logged
 public class ToadSwerveModules extends SubsystemBase {
   public static class AS5600Encoder {
     private final I2C i2c;
@@ -79,6 +88,30 @@ public class ToadSwerveModules extends SubsystemBase {
     public void stop() {
       driveMotor.stopMotor();
       steerMotor.stopMotor();
+    }
+  }
+
+  private void configureAutoBuilder() {
+    try {
+      var config = RobotConfig.fromGUISettings();
+      // Use config to set up auto builder parameters
+      AutoBuilder.configure(
+          () -> getState().Pose,
+          this::resetPose,
+          () -> getState().Speeds,
+          (speeds, feedforwards) ->
+              setControl(
+                  m_pathApplyRobotSpeeds
+                      .withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
+                      .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                      .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesYNewtons())),
+          new PPHolonomicDriveController(new PIDConstants(10, 0, 0), new PIDConstants(7, 0, 0)),
+          config,
+          () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+          this);
+    } catch (Exception e) {
+      DriverStation.reportError(
+          "Failed to configure AutoBuilder: " + e.getMessage(), e.getStackTrace());
     }
   }
 
@@ -169,5 +202,14 @@ public class ToadSwerveModules extends SubsystemBase {
 
   private static double inchesToMeters(double in) {
     return in * 0.0254;
+  }
+
+  public void setPose(Pose2d pose) {
+    this.resetPose(pose);
+  }
+
+  public Object getNavX() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getNavX'");
   }
 }

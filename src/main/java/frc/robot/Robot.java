@@ -4,31 +4,46 @@
 
 package frc.robot;
 
+import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.ToadSwerveModules;
 
+@Logged
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
-
+  private Pose2d robotPose = new Pose2d();
   private final RobotContainer m_robotContainer;
+  private ToadSwerveModules swerveModules = new ToadSwerveModules();
+  StructPublisher<Pose2d> publisher =
+      NetworkTableInstance.getDefault().getStructTopic("robotPose", Pose2d.struct).publish();
+  Field2d field = new Field2d();
 
   public Robot() {
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+    swerveModules = m_robotContainer.getSwerveModules();
+    DriverStation.startDataLog(DataLogManager.getLog());
   }
 
   @Override
   public void robotPeriodic() {
-    // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
-    // commands, running already-scheduled commands, removing finished or interrupted commands,
-    // and running subsystem periodic() methods.  This must be called from the robot's periodic
-    // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
+    SmartDashboard.putNumber("Gyro YAW", swerveModules.getNavX().getYaw());
+    robotPose = swerveModules.getPose();
+    publisher.set(robotPose);
+    field.setRobotPose(robotPose);
+    SmartDashboard.putData("Field", field);
   }
 
-  /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {}
 
@@ -41,10 +56,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
