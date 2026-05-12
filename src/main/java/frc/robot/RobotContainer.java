@@ -12,7 +12,7 @@ import frc.robot.subsystems.*;
 public class RobotContainer {
   private final ToadSwerveModules swerveModules = new ToadSwerveModules();
   private final CIMotorSubsystem cimMotor = new CIMotorSubsystem();
-  private ToadSwerveModules drivestate = swerveModules.getState();
+  // private ToadSwerveModules drivestate = swerveModules.getState();
   private final CommandXboxController driverController = new CommandXboxController(0);
 
   public RobotContainer() {

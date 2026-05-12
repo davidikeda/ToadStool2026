@@ -37,8 +37,9 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     SmartDashboard.putString("Alliance", DriverStation.getAlliance().toString());
-    SmartDashboard.putNumber("Gyro YAW", swerveModules.getNavX().getYaw());
-    robotPose = swerveModules.getPose();
+    // Temp fix until I make a function to get the yaw from the navx
+    // SmartDashboard.putNumber("Gyro YAW", swerveModules.getNavX().getYaw());
+    // robotPose = swerveModules.getPose();
     publisher.set(robotPose);
     field.setRobotPose(robotPose);
     SmartDashboard.putData("Field", field);
